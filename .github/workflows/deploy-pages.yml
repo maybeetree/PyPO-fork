@@ -1,28 +1,98 @@
-#name: Deploy docs to github pages
-#
-#on:
-#  push:
-#    branches:
-#      - main    # runs after PRs are merged
-#
-#permissions:
-#  contents: read
-#  pages: write
-#  id-token: write
-#
-## idk what this does
-#concurrency:
-#  group: "pages"
-#  cancel-in-progress: false
-#
-#jobs:
-#  deploy:
-#    #needs: build
-#    runs-on: ubuntu-latest
-#    environment:
-#      name: github-pages
-#      url: ${{ steps.deployment.outputs.page_url }}
-#    steps:
-#      - name: Deploy to GitHub Pages
-#        id: deployment
-#        uses: actions/deploy-pages@v4
+name: Deploy docs to github pages
+
+on:
+  push:
+    branches:
+      - main    # runs after PRs are merged
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# idk what this does
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    #needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        run: |
+          repo=maybeetree/PyPO-fork
+
+          # echo to stderr
+          eecho() {
+                  echo "$@" >&2
+          }
+
+          # echo to stderr and exit with error
+          die() {
+                  eecho "$@"
+                  exit 1
+          }
+
+          artifact_url="https://api.github.com/repos/maybeetree/PyPO-fork/actions/artifacts/6005496955/zip/"
+
+
+          # error 404 -> pages not enabled thru actions
+
+          die f
+
+          #gh api "repos/$repo/actions/runs" > \
+          #	archive/gh-api-sample-repos-actions-runs.json
+
+          run_id="$(gh api "repos/$repo/actions/runs" --jq \ '
+                  .workflow_runs |
+                  map(select(
+                          .path == ".github/workflows/on-pull-request.yml"
+                          and
+                          .conclusion == "success"
+                          )) |
+                  sort_by(.head_commit.timestamp)
+                          .[-1]
+                          .id
+                  ' 
+                  )" || die "Failed to get last run ID"
+
+          test "$run_id" || die "Failed to get last run ID"
+
+          echo "Run ID: $run_id"
+
+          #gh api "repos/$repo/actions/runs/$run_id/artifacts" > \
+          #	archive/gh-api-sample-repos-actions-runs-artifacts.json
+
+          artifact_url="$(gh api "repos/$repo/actions/runs/$run_id/artifacts" --jq '
+                  .artifacts |
+                  map(select(
+                          .name == "github-pages"
+                          ))
+                  .[0]
+                  .archive_download_url
+                  '
+                  )" || die "Failed to get artifact url"
+
+          test "$artifact_url" || die "Failed to get artifact url"
+
+          echo "Artifact URL: $artifact_url"
+
+          gh api \
+                  --method POST \
+                  -H "Accept: application/vnd.github+json" \
+                  -H "X-GitHub-Api-Version: 2026-03-10" \
+                  /repos/$repo/pages/deployments \
+                  --field "artifact_id=$artifact_url" \
+                  -f 'environment=github-pages' \
+                  -f pages_build_version="$GITHUB_SHA" \
+                  -f oidc_token="$OIDC_TOKEN" \
+                  || die "Failed to deploy pages."
+
+
+
+
