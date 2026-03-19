@@ -84,8 +84,6 @@ jobs:
           # error 404 -> pages not enabled thru actions
           gh api \
                   --method POST \
-                  -H "Accept: application/vnd.github+json" \
-                  -H "X-GitHub-Api-Version: 2026-03-10" \
                   /repos/$repo/pages/deployments \
                   --field "artifact_id=$artifact_id" \
                   -f 'environment=github-pages' \
