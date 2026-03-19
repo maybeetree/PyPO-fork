@@ -89,10 +89,10 @@ jobs:
           #  || die "failed to enable pages."
 
           oidc_token="$(
-            curl -sSL
-              -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN"
-              "$ACTIONS_ID_TOKEN_REQUEST_URL"
-            | jq -r '.value'
+            curl -sSL \
+              -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+              "$ACTIONS_ID_TOKEN_REQUEST_URL" | \
+            jq -r '.value'
             )" || die "Failed to get OIDC token"
 
           test "$oidc_token" || die "Failed to get OIDC token"
