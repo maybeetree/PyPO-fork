@@ -87,7 +87,7 @@ jobs:
                   --field "artifact_id=$artifact_id" \
                   -f 'environment=github-pages' \
                   -f pages_build_version="$GITHUB_SHA" \
-                  -f oidc_token="$OIDC_TOKEN" \
+                  -f oidc_token="$GH_TOKEN" \
                   || die "Failed to deploy pages."
 
 
