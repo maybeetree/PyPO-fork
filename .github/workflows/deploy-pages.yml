@@ -82,6 +82,23 @@ jobs:
 
           echo "Artifact ID: $artifact_id"
 
+          #gh api \
+          #  --method POST \
+          #  "/repos/$repo/pages" \
+          #  -f 'build_type=workflow' \
+          #  || die "failed to enable pages."
+
+          oidc_token="$(
+            curl -sSL
+              -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+              "$ACTIONS_ID_TOKEN_REQUEST_URL"
+            | jq -r '.value'
+            )" || die "Failed to get OIDC token"
+
+          test "$oidc_token" || die "Failed to get OIDC token"
+
+          echo "OIDC token length: $(echo -n "$oidc_token" | wc -c)"
+
           # error 404 -> pages not enabled thru actions
           gh api \
                   --method POST \
@@ -89,7 +106,7 @@ jobs:
                   --field "artifact_id=$artifact_id" \
                   -f 'environment=github-pages' \
                   -f pages_build_version="$GITHUB_SHA" \
-                  -f oidc_token="$GH_TOKEN" \
+                  -f oidc_token="$oidc_token" \
                   || die "Failed to deploy pages."
 
 
