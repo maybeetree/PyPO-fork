@@ -19,6 +19,7 @@ jobs:
   deploy:
     #needs: build
     runs-on: ubuntu-latest
+    # ???
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -63,19 +64,19 @@ jobs:
           #gh api "repos/$repo/actions/runs/$run_id/artifacts" > \
           #	archive/gh-api-sample-repos-actions-runs-artifacts.json
 
-          artifact_url="$(gh api "repos/$repo/actions/runs/$run_id/artifacts" --jq '
+          artifact_id="$(gh api "repos/$repo/actions/runs/$run_id/artifacts" --jq '
                   .artifacts |
                   map(select(
                           .name == "github-pages"
                           ))
                   .[0]
-                  .archive_download_url
+                  .id
                   '
-                  )" || die "Failed to get artifact url"
+                  )" || die "Failed to get artifact id"
 
-          test "$artifact_url" || die "Failed to get artifact url"
+          test "$artifact_id" || die "Failed to get artifact id"
 
-          echo "Artifact URL: $artifact_url"
+          echo "Artifact ID: $artifact_id"
 
           # error 404 -> pages not enabled thru actions
           gh api \
@@ -83,7 +84,7 @@ jobs:
                   -H "Accept: application/vnd.github+json" \
                   -H "X-GitHub-Api-Version: 2026-03-10" \
                   /repos/$repo/pages/deployments \
-                  --field "artifact_id=$artifact_url" \
+                  --field "artifact_id=$artifact_id" \
                   -f 'environment=github-pages' \
                   -f pages_build_version="$GITHUB_SHA" \
                   -f oidc_token="$OIDC_TOKEN" \
