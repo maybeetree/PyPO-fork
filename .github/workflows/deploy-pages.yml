@@ -24,6 +24,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     env:
+      GH_DEBUG: api
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Deploy to GitHub Pages
