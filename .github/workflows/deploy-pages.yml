@@ -41,6 +41,9 @@ jobs:
                   exit 1
           }
 
+          test "$GITHUB_SHA" || die 'GITHUB_SHA missing!'
+          test "$GH_TOKEN" || die 'GH_TOKEN missing!'
+
           #gh api "repos/$repo/actions/runs" > \
           #	archive/gh-api-sample-repos-actions-runs.json
 
