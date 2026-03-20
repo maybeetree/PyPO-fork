@@ -1,28 +1,21 @@
 name: Deploy docs to github pages
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     branches:
-      - main    # runs after PRs are merged
+      - main
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# idk what this does
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
-
 jobs:
   deploy:
-    #needs: build
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
-    # ???
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     env:
       GH_DEBUG: api
       GH_TOKEN: ${{ github.token }}
