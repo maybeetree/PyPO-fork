@@ -64,7 +64,9 @@ jobs:
         with:
           image: pypo-cicd:latest
           run: |
+            set -e
             . /venv/bin/activate
+            pip install -r requirements-dev.txt -e .[dev]
             nose2
           options: -v ${{ github.workspace }}:/app
 
