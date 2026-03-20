@@ -14,11 +14,22 @@ permissions:
 
 jobs:
   deploy:
-    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
+
+    # Run only on merged requests
+    if: github.event.pull_request.merged == true
+
+    # this is needed!!
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     env:
+      # Enable debug logging for `gh` command
       GH_DEBUG: api
+      # Give `gh` command access to repo
       GH_TOKEN: ${{ github.token }}
+
     steps:
       - name: Deploy to GitHub Pages
         run: |
