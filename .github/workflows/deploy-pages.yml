@@ -86,12 +86,15 @@ jobs:
 
           echo "Artifact ID: $artifact_id"
 
-          echo "Attempt enabling pages..."
-          gh api \
-            --method POST \
-            "/repos/$repo/pages" \
-            -f 'build_type=workflow' \
-            || echo "It failed but that's probably OK"
+          # This causes some WEIRD issues!
+          # Better to do it manually i think
+          #
+          #echo "Attempt enabling pages..."
+          #gh api \
+          #  --method POST \
+          #  "/repos/$repo/pages" \
+          #  -f 'build_type=workflow' \
+          #  || echo "It failed but that's probably OK"
 
           oidc_token="$(
             curl -sSL \
