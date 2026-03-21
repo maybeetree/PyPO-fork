@@ -1,9 +1,9 @@
 name: Deploy docs to github pages
 
 on:
-  #pull_request:
-  #  types:
-  #    - closed
+  pull_request:
+    types:
+      - closed
     branches:
       - main
 
@@ -17,8 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     # Run only on merged requests
-    # nevermind, run always even on force push
-    #if: github.event.pull_request.merged == true
+    if: github.event.pull_request.merged == true
 
     # this is needed!!
     environment:
