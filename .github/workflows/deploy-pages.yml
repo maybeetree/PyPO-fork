@@ -33,8 +33,6 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         run: |
-          repo=PyPO-dev/PyPO
-
           # echo to stderr
           eecho() {
                   echo "$@" >&2
@@ -46,11 +44,29 @@ jobs:
                   exit 1
           }
 
+          test "$GITHUB_ACTION_REPOSITORY" || \
+            die 'GITHUB_ACTION_REPOSITORY missing!'
           test "$GITHUB_SHA" || die 'GITHUB_SHA missing!'
           test "$GH_TOKEN" || die 'GH_TOKEN missing!'
+          test "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" || \
+            die 'ACTIONS_ID_TOKEN_REQUEST_TOKEN missing!!'
+          test "$ACTIONS_ID_TOKEN_REQUEST_URL" || \
+            die 'ACTIONS_ID_TOKEN_REQUEST_URL missing!!'
+
+          repo="$GITHUB_ACTION_REPOSITORY"
+
+          echo "repo: $repo"
+
+          echo "ACTIONS_ID_TOKEN_REQUEST_TOKEN length: "
+          echo -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" | wc -c
+
+          echo "ACTIONS_ID_TOKEN_REQUEST_URL: "
+          echo "$ACTIONS_ID_TOKEN_REQUEST_URL"
 
           #gh api "repos/$repo/actions/runs" > \
           #	archive/gh-api-sample-repos-actions-runs.json
+          #
+
 
           run_id="$(gh api "repos/$repo/actions/runs" --jq \ '
                   .workflow_runs |
