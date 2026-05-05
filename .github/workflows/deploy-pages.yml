@@ -92,6 +92,10 @@ jobs:
           #
 
 
+          # i think its already an env var
+          # but just in case export it so jq query can read it
+          export GITHUB_SHA
+
           run_id="$(gh api "repos/$repo/actions/runs" --jq \ '
             .workflow_runs |
             map(
@@ -100,7 +104,7 @@ jobs:
                 and
                 .conclusion == "success"
                 and
-                .head_commit.id == "$GITHUB_SHA"
+                .head_commit.id == env.GITHUB_SHA
                 )
               )
               .[-1]
