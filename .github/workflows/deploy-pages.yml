@@ -68,8 +68,10 @@ jobs:
 
           test "$GITHUB_REPOSITORY" || \
             die 'GITHUB_REPOSITORY missing!'
-          test "$GITHUB_SHA" || die 'GITHUB_SHA missing!'
-          test "$GH_TOKEN" || die 'GH_TOKEN missing!'
+          test "$GITHUB_SHA" || \
+            die 'GITHUB_SHA missing!'
+          test "$GH_TOKEN" || \
+            die 'GH_TOKEN missing!'
           test "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" || \
             die 'ACTIONS_ID_TOKEN_REQUEST_TOKEN missing!!'
           test "$ACTIONS_ID_TOKEN_REQUEST_URL" || \
@@ -91,17 +93,20 @@ jobs:
 
 
           run_id="$(gh api "repos/$repo/actions/runs" --jq \ '
-                  .workflow_runs |
-                  map(select(
-                          .path == ".github/workflows/on-pull-request.yml"
-                          and
-                          .conclusion == "success"
-                          )) |
-                  sort_by(.head_commit.timestamp)
-                          .[-1]
-                          .id
-                  ' 
-                  )" || die "Failed to get last run ID"
+            .workflow_runs |
+            map(
+              select(
+                .path == ".github/workflows/on-pull-request.yml"
+                and
+                .conclusion == "success"
+                and
+                .head_commit.id == "$GITHUB_SHA"
+                )
+              )
+              .[-1]
+              .id
+            ' 
+            )" || die "Failed to get last run ID"
 
           test "$run_id" || die "Failed to get last run ID"
 
@@ -111,14 +116,16 @@ jobs:
           #	archive/gh-api-sample-repos-actions-runs-artifacts.json
 
           artifact_id="$(gh api "repos/$repo/actions/runs/$run_id/artifacts" --jq '
-                  .artifacts |
-                  map(select(
-                          .name == "github-pages"
-                          ))
-                  .[0]
-                  .id
-                  '
-                  )" || die "Failed to get artifact id"
+            .artifacts |
+            map(
+              select(
+                .name == "github-pages"
+                )
+              )
+              .[0]
+              .id
+            '
+            )" || die "Failed to get artifact id"
 
           test "$artifact_id" || die "Failed to get artifact id"
 
