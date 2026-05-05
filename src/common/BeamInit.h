@@ -485,13 +485,13 @@ void initGaussBeam(T gdict, U refldict, V *res_field, V *res_current)
         kr_sum_3 = (j*kr_inv + kr_inv*kr_inv);
 
         // Calculate the E and H fields
-        efield[0] = -prefactor*expo*(kr_sum_1 + kr_sum_2*(R[0]*R[0] / (r*r)) - kr_sum_3*(R[2] / r));
+        efield[0] = prefactor*expo*(kr_sum_1 + kr_sum_2*(R[0]*R[0] / (r*r)) - kr_sum_3*(R[2] / r));
         efield[1] = prefactor*expo*kr_sum_2*R[0]*R[1]/(r*r);
-        efield[2] = -prefactor*expo*(kr_sum_2*R[0]*R[2]/(r*r) + kr_sum_3*R[0]/r);
+        efield[2] = prefactor*expo*(kr_sum_2*R[0]*R[2]/(r*r) - kr_sum_3*R[0]/r);
 
-        hfield[0] = -prefactor*expo*kr_sum_2*R[0]*R[1]/(r*r);
+        hfield[0] = prefactor*expo*kr_sum_2*R[0]*R[1]/(r*r);
         hfield[1] = prefactor*expo*(kr_sum_1 + kr_sum_2*(R[1]*R[1] / (r*r)) - kr_sum_3*(R[2] / r));
-        hfield[2] = -prefactor*expo*(kr_sum_2*R[1]*R[2]/(r*r) + kr_sum_3*R[1]/r);
+        hfield[2] = prefactor*expo*(kr_sum_2*R[1]*R[2]/(r*r) - kr_sum_3*R[1]/r);
 
         // Calculate the M and J currents
         n_source[0] = reflc.nx[i];
@@ -761,6 +761,41 @@ void calcJM(T *res_field, T *res_current, V refldict, int mode)
             field[0] = {res_field->r2x[i], res_field->i2x[i]};
             field[1] = {res_field->r2y[i], res_field->i2y[i]};
             field[2] = {res_field->r2z[i], res_field->i2z[i]};
+
+            n_source[0] = reflc.nx[i];
+            n_source[1] = reflc.ny[i];
+            n_source[2] = reflc.nz[i];
+
+            ut.ext(n_source, field, js);
+
+            res_current->r1x[i] = 2*js[0].real();
+            res_current->i1x[i] = 2*js[0].imag();
+
+            res_current->r1y[i] = 2*js[1].real();
+            res_current->i1y[i] = 2*js[1].imag();
+
+            res_current->r1z[i] = 2*js[2].real();
+            res_current->i1z[i] = 2*js[2].imag();
+
+            res_current->r2x[i] = 0;
+            res_current->i2x[i] = 0;
+
+            res_current->r2y[i] = 0;
+            res_current->i2y[i] = 0;
+
+            res_current->r2z[i] = 0;
+            res_current->i2z[i] = 0;
+        }
+    }
+
+    // Source mode - electric field and currents
+    else if (mode == 3)
+    {
+        for (int i=0; i<nTot; i++)
+        {
+            field[0] = {res_field->r1x[i], res_field->i1x[i]};
+            field[1] = {res_field->r1y[i], res_field->i1y[i]};
+            field[2] = {res_field->r1z[i], res_field->i1z[i]};
 
             n_source[0] = reflc.nx[i];
             n_source[1] = reflc.ny[i];
