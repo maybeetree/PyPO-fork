@@ -1,7 +1,17 @@
-name: Verify docs and automatic tests
+name: Deploy docs to github pages
+
+# This is more reasonable but will break
+# arcanely if the pull request comes from a fork
+
+#on:
+#  pull_request:
+#    types:
+#      - closed
+#    branches:
+#      - main
 
 on:
-  pull_request:
+  push:
     branches:
       - main
 
@@ -48,27 +58,31 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: set up docker build and push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: "Dockerfile.cicd"
           tags: pypo-cicd:latest
           load: true
-          push: false
+          # I think push is needed to make gha cache work..? idk
+          push: true
           # This caches docker layers to github actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Run Tests
-        uses: addnab/docker-run-action@v3
-        with:
-          image: pypo-cicd:latest
-          run: |
-            set -e
-            . /venv/bin/activate
-            pip install -r requirements-dev.txt -e .[dev]
-            nose2
-          options: -v ${{ github.workspace }}:/app
+      # Don't need to run tests -- this should have been done
+      # on pull request creation in the other workflow file
+      #
+      #- name: Run Tests
+      #  uses: addnab/docker-run-action@v3
+      #  with:
+      #    image: pypo-cicd:latest
+      #    run: |
+      #      set -e
+      #      . /venv/bin/activate
+      #      pip install -r requirements-dev.txt -e .[dev]
+      #      nose2
+      #    options: -v ${{ github.workspace }}:/app
 
 
       - name: Build Docs
@@ -85,12 +99,16 @@ jobs:
         with:
           path: ./docs
 
-      #- name: Run Tests
-      #  uses: addnab/docker-run-action@v3
-      #  with:
-      #    image: pypo-cicd:latest
-      #    run: |
-      #      /venv/bin/pip GenerateDocs.py
-      #    options: -v ${{ github.workspace }}:/app
+  pages:
+    runs-on: ubuntu-latest
 
+    permissions:
+      pages: write
+      id-token: write
+
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
 
