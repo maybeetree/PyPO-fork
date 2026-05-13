@@ -64,8 +64,7 @@ jobs:
           file: "Dockerfile.cicd"
           tags: pypo-cicd:latest
           load: true
-          # I think push is needed to make gha cache work..? idk
-          push: true
+          push: false
           # This caches docker layers to github actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
