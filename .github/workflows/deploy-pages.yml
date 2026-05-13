@@ -87,6 +87,9 @@ jobs:
           echo "ACTIONS_ID_TOKEN_REQUEST_URL: "
           echo "$ACTIONS_ID_TOKEN_REQUEST_URL"
 
+          echo "GITHUB_SHA: "
+          echo "$GITHUB_SHA"
+
           #gh api "repos/$repo/actions/runs" > \
           #	archive/gh-api-sample-repos-actions-runs.json
           #
@@ -112,7 +115,7 @@ jobs:
             ' 
             )" || die "Failed to get last run ID"
 
-          test "$run_id" || die "Failed to get last run ID"
+          test "$run_id" || die "Last run ID is empty"
 
           echo "Run ID: $run_id"
 
@@ -131,7 +134,7 @@ jobs:
             '
             )" || die "Failed to get artifact id"
 
-          test "$artifact_id" || die "Failed to get artifact id"
+          test "$artifact_id" || die "artifact id is empty"
 
           echo "Artifact ID: $artifact_id"
 
@@ -152,7 +155,7 @@ jobs:
             jq -r '.value'
             )" || die "Failed to get OIDC token"
 
-          test "$oidc_token" || die "Failed to get OIDC token"
+          test "$oidc_token" || die "OIDC token is empty"
 
           echo "OIDC token length: $(echo -n "$oidc_token" | wc -c)"
 
